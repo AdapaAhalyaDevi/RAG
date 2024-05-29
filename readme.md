@@ -30,3 +30,12 @@ visit the below link for access fast api docs
 ```
 http://localhost:8000/docs
 ```
+
+### CONFLUENCE POC SETUP
+
+## Prerequisite
+
+Get confluence space details and add it to .env file. Refer .env.example. Make sure you have access to the space
+
+
+   

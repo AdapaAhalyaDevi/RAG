@@ -1,3 +1,8 @@
 fastapi
 langchain
 aiofiles
+llama-index
+llama-hub
+llama-index-readers-confluence
+llama-hub
+python-dotenv
