@@ -1,20 +1,35 @@
-from langchain.document_loaders.pdf import PyPDFDirectoryLoader
+from langchain_community.document_loaders import TextLoader, Docx2txtLoader, PyPDFLoader, UnstructuredExcelLoader
+from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from embedding import get_embedding_function
-from langchain.vectorstores.chroma import Chroma
+from langchain_community.vectorstores import Chroma
+import os
 
-DB_PATH = "chroma"
+DB_PATH = "database"
 
 
-def load_database(data_path):
-    documents = load_documents(data_path)
+def load_database(data_path, filename, dbname):
+    documents = load_documents(data_path, filename)
     chunks = split_documents(documents)
-    add_to_db(chunks)
+    print("-------------------------")
+    print(chunks)
+    add_to_db(chunks, dbname, data_path, filename)
 
 
-def load_documents(data_path):
-    document_loader = PyPDFDirectoryLoader(data_path)
+def load_documents(data_path, filename):
+    _, file_extension = os.path.splitext(filename)
+    match file_extension:
+        case '.txt':
+            document_loader = TextLoader(f"{data_path}/{filename}")
+        case '.docx' | '.doc':
+            document_loader = Docx2txtLoader(f"{data_path}/{filename}")
+        case '.pdf':
+            document_loader = PyPDFLoader(f"{data_path}/{filename}")
+        case '.csv':
+            document_loader = CSVLoader(f"{data_path}/{filename}")
+        case _:
+            print("File Formate is Not Supported")
     return document_loader.load()
 
 
@@ -28,9 +43,9 @@ def split_documents(documents: list[Document]):
     return text_splitter.split_documents(documents)
 
 
-def add_to_db(document_chunks: list[Document]):
+def add_to_db(document_chunks: list[Document], dbname, data_path, filename):
     db = Chroma(
-        persist_directory=DB_PATH, embedding_function=get_embedding_function()
+        persist_directory=f"{DB_PATH}/{dbname}", embedding_function=get_embedding_function()
     )
 
     chunks_with_ids = compute_ids(document_chunks)
@@ -51,6 +66,9 @@ def add_to_db(document_chunks: list[Document]):
         db.persist()
     else:
         print("No new documents to add")
+    
+    if os.path.exists(f"{data_path}/{filename}"):
+        os.remove(f"{data_path}/{filename}")
 
 
 def compute_ids(chunks):
