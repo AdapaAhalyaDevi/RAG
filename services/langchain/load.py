@@ -2,18 +2,16 @@ from langchain_community.document_loaders import TextLoader, Docx2txtLoader, PyP
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
-from embedding import get_embedding_function
+from services.langchain.embedding import get_embedding_function
 from langchain_community.vectorstores import Chroma
 import os
 
-DB_PATH = "database"
+DB_PATH = "../../chroma"
 
 
 def load_database(data_path, filename, dbname):
     documents = load_documents(data_path, filename)
     chunks = split_documents(documents)
-    print("-------------------------")
-    print(chunks)
     add_to_db(chunks, dbname, data_path, filename)
 
 
@@ -29,7 +27,7 @@ def load_documents(data_path, filename):
         case '.csv':
             document_loader = CSVLoader(f"{data_path}/{filename}")
         case _:
-            print("File Formate is Not Supported")
+            print("File Format is Not Supported")
     return document_loader.load()
 
 
@@ -52,7 +50,7 @@ def add_to_db(document_chunks: list[Document], dbname, data_path, filename):
 
     existing_items = db.get(include=[])
     existing_ids = set(existing_items["ids"])
-    print(f"Documents in DB: {len(existing_ids)}")
+    # print(f"Documents in DB: {len(existing_ids)}")
 
     new_chunks = []
     for chunk in chunks_with_ids:
@@ -60,7 +58,7 @@ def add_to_db(document_chunks: list[Document], dbname, data_path, filename):
             new_chunks.append(chunk)
 
     if len(new_chunks):
-        print(f"Adding new documents: {len(new_chunks)}")
+        # print(f"Adding new documents: {len(new_chunks)}")
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
         db.add_documents(new_chunks, ids=new_chunk_ids)
         db.persist()
