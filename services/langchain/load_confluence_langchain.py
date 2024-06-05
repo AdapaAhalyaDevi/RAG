@@ -66,7 +66,7 @@ def compute_ids(chunks):
     return chunks
 
 
-def get_confluence_data_as_vector(url, username, api_key, space_key):
+def get_confluence_data_as_vector_langchain(url, username, api_key, space_key):
     loader = ConfluenceLoader(
         url=url,
         username=username,
@@ -77,11 +77,10 @@ def get_confluence_data_as_vector(url, username, api_key, space_key):
         max_pages=4
     )
     documents = loader.load()
-
     docs = []
     for document in documents:
-        print("------document---------")
-        print(document)
+        # print("------document---------")
+        # print(document)
         title = document.metadata['title']
         content = document.page_content
         source = document.metadata['source']
@@ -95,22 +94,23 @@ def get_confluence_data_as_vector(url, username, api_key, space_key):
                 'Header 1': '',
                 'Header 2': ''
                 }
-        print(data)
+        # print(data)
         md_header_splits = markdown_splitter.split_text(content)
+        # print(md_header_splits)
         for i, split in enumerate(md_header_splits):
             data['sub_id'] = i
             data.update(split.metadata)
 
             data['content'] = f"{data['title']}\n\tsubsection:{data['Header 1']}:\n\tsub_subsection:{data['Header 2']}:\n" + split.page_content
-            print("-------split markdown----------")
-            print(f"conf{doc_id}_{i} - {data}")
+            # print("-------split markdown----------")
+            # print(f"conf{doc_id}_{i} - {data}")
             new_doc = Document(page_content=data['content'], metadata=document.metadata)
             docs.append(new_doc)
-    print("docs", docs)
+    # print("docs", docs)
     return Chroma.from_documents(docs, get_embedding_function())
 
 
-def query_on_confluence_data(index, query_text):
+def query_on_confluence_data_langchain(index, query_text):
     results = index.similarity_search_with_score(query_text, k=1)
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])

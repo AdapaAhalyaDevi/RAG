@@ -6,13 +6,23 @@ from services.langchain.embedding import get_embedding_function
 from langchain_community.vectorstores import Chroma
 import os
 
-DB_PATH = "../../chroma"
+DB_PATH = "././chroma"
+
+class FileExtensionError(Exception):
+    "File Format is Not Supported"
+    pass
 
 
-def load_database(data_path, filename, dbname):
-    documents = load_documents(data_path, filename)
-    chunks = split_documents(documents)
-    add_to_db(chunks, dbname, data_path, filename)
+
+def load_database(data_path, filename, project_id):
+    try:
+        documents = load_documents(data_path, filename)
+        chunks = split_documents(documents)
+        return add_to_db(chunks, project_id, data_path, filename)
+    except FileExtensionError:
+        return {"error": "File Format is Not Supported"}
+    except:
+        return {"error": "something went wrong"}
 
 
 def load_documents(data_path, filename):
@@ -28,6 +38,7 @@ def load_documents(data_path, filename):
             document_loader = CSVLoader(f"{data_path}/{filename}")
         case _:
             print("File Format is Not Supported")
+            raise FileExtensionError
     return document_loader.load()
 
 
@@ -41,14 +52,14 @@ def split_documents(documents: list[Document]):
     return text_splitter.split_documents(documents)
 
 
-def add_to_db(document_chunks: list[Document], dbname, data_path, filename):
+def add_to_db(document_chunks: list[Document], project_id, data_path, filename):
     db = Chroma(
-        persist_directory=f"{DB_PATH}/{dbname}", embedding_function=get_embedding_function()
+        persist_directory=f"{DB_PATH}/{project_id}", embedding_function=get_embedding_function()
     )
-
-    chunks_with_ids = compute_ids(document_chunks)
+    chunks_with_ids = compute_ids(document_chunks, project_id)
 
     existing_items = db.get(include=[])
+    print(existing_items)
     existing_ids = set(existing_items["ids"])
     # print(f"Documents in DB: {len(existing_ids)}")
 
@@ -62,14 +73,15 @@ def add_to_db(document_chunks: list[Document], dbname, data_path, filename):
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
         db.add_documents(new_chunks, ids=new_chunk_ids)
         db.persist()
+        return {"response": "File Upload Successfully"}
     else:
-        print("No new documents to add")
+        return {"response": "No new documents to add"}
     
     if os.path.exists(f"{data_path}/{filename}"):
         os.remove(f"{data_path}/{filename}")
 
 
-def compute_ids(chunks):
+def compute_ids(chunks, project_id):
     last_page_id = None
     current_chunk_index = 0
 
@@ -83,7 +95,7 @@ def compute_ids(chunks):
         else:
             current_chunk_index = 0
 
-        chunk_id = f"{current_page_id}:{current_chunk_index}"
+        chunk_id = f"{current_page_id}:{current_chunk_index}:{project_id}"
         last_page_id = current_page_id
         chunk.metadata["id"] = chunk_id
     return chunks
