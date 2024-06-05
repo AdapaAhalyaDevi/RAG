@@ -19,8 +19,8 @@ def get_confluence_data_as_vector_llamaindex(url, username, password, space_key)
         space_key=space_key, include_attachments=True, page_status="current"
     )
 
-    # print("------------------")
-    # print(documents)
+    print("------------------")
+    print(documents)
     docs = []
     for document in documents:
         title = document.metadata['title']
@@ -33,6 +33,7 @@ def get_confluence_data_as_vector_llamaindex(url, username, password, space_key)
             'title': title,
             'source': source,
             'doc_id': doc_id,
+            'id_': doc_id,
             'url': url,
             }
 

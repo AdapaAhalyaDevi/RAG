@@ -9,11 +9,12 @@ from services.langchain.retriever import run_query as langchain_run_query
 from services.llamaindex.retriever import run_query as llamaindex_run_query
 from services.langchain.filetoquery import filetoquery as langchain_filetoquery
 from services.llamaindex.filetoquery import filetoquery as llamaindex_filetoquery
-from services.langchain.load_confluence_langchain import get_confluence_data_as_vector_langchain, query_on_confluence_data_langchain
+from services.langchain.load_confluence import get_confluence_data_as_vector_langchain, query_on_confluence_data_langchain
 from services.llamaindex.load_confluence import get_confluence_data_as_vector_llamaindex, query_on_confluence_data_llamaindex
+from ollama_core.text_to_query import text_to_query
 
 app = FastAPI()
-DATA_PATH = "data"
+DATA_PATH = "././data"
 
 ALLOWED_FILE_TYPES = {"text/plain", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/csv", "application/pdf"}
 
@@ -53,21 +54,21 @@ async def get(body: str, project_id: str = Query(min_length=1, max_length=15)):
 
 
 @app.post("/langchain/file-to-query")
-async def upload_file(file: UploadFile = File(...), body: str = None):
+async def file_to_query_langchain(file: UploadFile = File(...), body: str = None):
     fullpath = os.path.join(DATA_PATH, file.filename)
     async with aiofiles.open(fullpath, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
-    langchain_filetoquery(file.filename, body)
+    return langchain_filetoquery(DATA_PATH, file.filename, body)
 
 
 @app.post("/llamaindex/file-to-query")
-async def upload_file(file: UploadFile = File(...), body: str = None):
+async def file_to_query_llamaindex(file: UploadFile = File(...), body: str = None):
     fullpath = os.path.join(DATA_PATH, file.filename)
     async with aiofiles.open(fullpath, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
-    llamaindex_filetoquery(file.filename, body)
+    return llamaindex_filetoquery(file.filename, body)
 
 
 
@@ -83,3 +84,10 @@ async def query_data_from_confluence(body: str, url: str, username: str, passwor
     q = get_confluence_data_as_vector_llamaindex(url, username, password, space_key)
     return query_on_confluence_data_llamaindex(q, body)
 
+
+
+
+@app.post("/text-to-query")
+async def query(text_content: str, query: str):
+    response = text_to_query(text_content, query)
+    return response

@@ -30,15 +30,7 @@ def add_to_db(documents, data_path, project_id, filename):
         documents, storage_context=storage_context, embed_model=get_embedding_function()
     )
 
-    directory_path = f"././{data_path}"
-    if os.path.exists(directory_path):
-        try:
-            files = os.listdir(directory_path)
-            for file in files:
-                file_path = os.path.join(directory_path, file)
-                if os.path.isfile(file_path):
-                    os.remove(file_path)
-        except OSError:
-            print("Error occurred while deleting files.")
+
+
 
 

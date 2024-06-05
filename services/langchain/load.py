@@ -21,7 +21,8 @@ def load_database(data_path, filename, project_id):
         return add_to_db(chunks, project_id, data_path, filename)
     except FileExtensionError:
         return {"error": "File Format is Not Supported"}
-    except:
+    except Exception as error:
+        print("Error : ", error)
         return {"error": "something went wrong"}
 
 
@@ -59,9 +60,7 @@ def add_to_db(document_chunks: list[Document], project_id, data_path, filename):
     chunks_with_ids = compute_ids(document_chunks, project_id)
 
     existing_items = db.get(include=[])
-    print(existing_items)
     existing_ids = set(existing_items["ids"])
-    # print(f"Documents in DB: {len(existing_ids)}")
 
     new_chunks = []
     for chunk in chunks_with_ids:
@@ -69,7 +68,6 @@ def add_to_db(document_chunks: list[Document], project_id, data_path, filename):
             new_chunks.append(chunk)
 
     if len(new_chunks):
-        # print(f"Adding new documents: {len(new_chunks)}")
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
         db.add_documents(new_chunks, ids=new_chunk_ids)
         db.persist()

@@ -14,5 +14,4 @@ def filetoquery(filename, query):
 
     query_engine = index.as_query_engine(streaming=True)
     response = query_engine.query(query)
-
     return {"response": response}
