@@ -35,35 +35,29 @@ def get_confluence_data_as_vector_llamaindex(url, username, password, space_key)
             'doc_id': doc_id,
             'id_': doc_id,
             'url': url,
-            }
-
+        }
 
         docs.append(content)
+    # node_parser = SentenceSplitter(chunk_size=1024, chunk_overlap=20)
 
-    node_parser = SentenceSplitter(chunk_size=1024, chunk_overlap=20)
-
-    nodes = node_parser.get_nodes_from_documents(
-        docs, show_progress=False
-    )
+    # nodes = node_parser.get_nodes_from_documents(
+    #     docs, show_progress=False
+    # )
     chroma_client = chromadb.EphemeralClient()
     chroma_collection = chroma_client.create_collection("quickstart2")
 
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     index = VectorStoreIndex.from_documents(
-        docs, storage_context=storage_context, embed_model=get_embedding_function()
+        documents, storage_context=storage_context, embed_model=get_embedding_function()
     )
     return index
 
 
-
 def query_on_confluence_data_llamaindex(index, query_text):
     query_engine = index.as_query_engine()
-    response = query_engine.query(query_text)
-    print(response)
-
-
-
+    answer = query_engine.query(query_text)
+    return {"response": answer.response}
 
 # # create client and a new collection
 # chroma_client = chromadb.EphemeralClient()
