@@ -17,12 +17,12 @@ def get_confluence_data_as_vector_llamaindex(url, username, password, space_key)
     )
 
     chroma_client = chromadb.EphemeralClient()
-    chroma_collection = chroma_client.create_collection("default")
+    # chroma_collection = chroma_client.create_collection("default")
 
-    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    # vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+    # storage_context = StorageContext.from_defaults(vector_store=vector_store)
     index = VectorStoreIndex.from_documents(
-        documents, storage_context=storage_context, embed_model=get_embedding_function()
+        documents, embed_model=get_embedding_function()
     )
     return index
 
