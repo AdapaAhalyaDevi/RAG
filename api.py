@@ -42,18 +42,18 @@ async def upload_file(project_id: str = Form(...), file: UploadFile = File(...))
 
 
 class query(BaseModel):
-    body: str 
+    query: str 
     project_id: str
 
 
 @app.post("/langchain/ai")
 async def get(param: query):
-    return langchain_run_query(param.body, param.project_id)
+    return langchain_run_query(param.query, param.project_id)
 
 
 @app.post("/llamaindex/ai")
 async def get(param: query):
-    return llamaindex_run_query(param.body, param.project_id)
+    return llamaindex_run_query(param.query, param.project_id)
 
 
 
@@ -78,7 +78,7 @@ async def file_to_query_llamaindex(file: UploadFile = File(...), query: str = Fo
 
 
 class QueryConfluenceLangchain(BaseModel):
-    body: str
+    query: str
     url: str
     username: str
     api_key: str
@@ -87,11 +87,11 @@ class QueryConfluenceLangchain(BaseModel):
 @app.post("/langchain/query-confluence")
 async def query_data_from_confluence(param: QueryConfluenceLangchain):
     q = get_confluence_data_as_vector_langchain(param.url, param.username, param.api_key, param.space_key)
-    return query_on_confluence_data_langchain(q, param.body)
+    return query_on_confluence_data_langchain(q, param.query)
 
 
 class QueryConfluenceLlamaindex(BaseModel):
-    body: str
+    query: str
     url: str
     username: str
     password: str
@@ -100,7 +100,7 @@ class QueryConfluenceLlamaindex(BaseModel):
 @app.post("/llamaindex/query-confluence")
 async def query_data_from_confluence(param: QueryConfluenceLlamaindex):
     q = get_confluence_data_as_vector_llamaindex(param.url, param.username, param.password, param.space_key)
-    return query_on_confluence_data_llamaindex(q, param.body)
+    return query_on_confluence_data_llamaindex(q, param.query)
 
 
 
