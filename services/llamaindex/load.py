@@ -5,11 +5,13 @@ from services.llamaindex.embedding import get_embedding_function
 from llama_index.llms.ollama import Ollama
 import chromadb, os
 
-DB_PATH = "././chroma"
+DB_PATH = "././chroma/llamaindex"
 
 
 def load_database(data_path, filename, project_id):
+    print("load_database function called in llamaindex")
     documents = load_documents(data_path)
+    print("**documents**", documents)
     return add_to_db(documents, data_path, project_id, filename)
 
 

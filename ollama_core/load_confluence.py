@@ -4,7 +4,7 @@ from services.llamaindex.load_confluence import get_confluence_data_as_vector_ll
 def load_confluence(agent, llm_model, query, url, username, api_key, space_key):
     match agent:
         case "langchain":
-            index = get_confluence_data_as_vector_langchain(url, username, api_key, space_key)
+            index = get_confluence_data_as_vector_langchain(url, query, username, api_key, space_key)
             response = query_on_confluence_data_langchain(llm_model, index, query)
             return response
 

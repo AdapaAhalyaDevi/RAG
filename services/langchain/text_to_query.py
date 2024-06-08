@@ -2,9 +2,6 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
 
 
-
-
-
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
 

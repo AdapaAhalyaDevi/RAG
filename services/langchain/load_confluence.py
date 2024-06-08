@@ -11,7 +11,6 @@ from services.langchain.text_to_query import text_to_query
 from langchain.text_splitter import MarkdownHeaderTextSplitter
 
 
-LLM_MODEL_NAME = "llama2"
 
 PROMPT_TEMPLATE = """
 The context provided is data from confluence space.
@@ -57,16 +56,17 @@ def compute_ids(chunks):
     return chunks
 
 
-def get_confluence_data_as_vector_langchain(url, username, api_key, space_key):
+def get_confluence_data_as_vector_langchain(url, query, username, api_key, space_key):
     print(f"space = {space_key}")
     loader = ConfluenceLoader(
         url=url,
         username=username,
         api_key=api_key,
+        # cql=f'space = "{space_key}" AND title = "{query}"',
         cql=f'space = "{space_key}"',
         space_key=space_key,
-        limit=5,
-        max_pages=4
+        # limit=5,
+        # max_pages=4
     )
 
     documents = loader.load()
@@ -119,8 +119,16 @@ def query_on_confluence_data_langchain(llm_model, index, query_text):
     PROMPT_TEMPLATE2 = """ 
     From given above context can you tell me how much percentage the response is matching with the query. Here is my Query and Response, \n
     Query: {query}\nResponse: {response}\n
-    Provide your response like, Matching: [only percentage]
+    Provide your response like,\n - Matching: [only percentage]
     """
     prompt2 = PROMPT_TEMPLATE2.format(query=query_text, response=response_text)
-    matchingIndex = text_to_query(llm_model, context_text, prompt2)
+    
+    match llm_model:
+        case "mistral":
+            LLM_MODEL_NAME = "llama2"
+        case "llama2":
+            LLM_MODEL_NAME = "mistral"
+        # case _:
+
+    matchingIndex = text_to_query(LLM_MODEL_NAME, context_text, prompt2)
     return {"response": response_text, "hallucinatingPercentage": matchingIndex}

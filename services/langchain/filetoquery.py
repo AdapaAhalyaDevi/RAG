@@ -25,8 +25,6 @@ Answer the question based on the above context: {question}
 
 def filetoquery(llm_model, data_path, filename, query):
 
-    LLM_MODEL_NAME = llm_model
-
     _, file_extension = os.path.splitext(filename)
     match file_extension:
         case '.txt':
@@ -43,16 +41,18 @@ def filetoquery(llm_model, data_path, filename, query):
 
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     docs = text_splitter.split_documents(documents)
+    print("**docs**",docs)
 
     embedding_function = get_embedding_function()
     db = Chroma.from_documents(docs, embedding_function)
     results = db.similarity_search_with_score(query, k=2)
+    print("**results**", results)
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query)
 
-    model = Ollama(model=LLM_MODEL_NAME)
+    model = Ollama(model=llm_model)
     response_text = model.invoke(prompt)
     
     return {"response": response_text}

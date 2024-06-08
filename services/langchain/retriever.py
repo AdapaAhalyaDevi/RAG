@@ -5,7 +5,7 @@ from langchain_community.llms.ollama import Ollama
 import os
 from services.langchain.embedding import get_embedding_function
 
-CHROMA_PATH = "././chroma"
+CHROMA_PATH = "././chroma/langchain"
 
 
 PROMPT_TEMPLATE = """
@@ -29,6 +29,7 @@ def run_query(llm_model: str, query_text: str, project_id: str):
     db = Chroma(persist_directory=f"{CHROMA_PATH}/{project_id}", embedding_function=embedding_function)
 
     results = db.similarity_search_with_score(query_text, k=5)
+    print("**results**", results)
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
@@ -38,6 +39,4 @@ def run_query(llm_model: str, query_text: str, project_id: str):
     
     response_text = model.invoke(prompt)
 
-    sources = [doc.metadata.get("id", None) for doc, _score in results]
-    formatted_response = f"Response: {response_text}\nSources: {sources}"
     return {"response": response_text}

@@ -1,5 +1,4 @@
 from services.langchain.text_to_query import text_to_query as langchain_query
-from services.llamaindex.text_to_query import text_to_query as llamaindex_query
 
 
 def query_from_text(agent, llm_model, text, query):

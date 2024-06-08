@@ -6,7 +6,7 @@ from services.llamaindex.embedding import get_embedding_function
 from llama_index.llms.ollama import Ollama
 
 
-CHROMA_PATH = "././chroma"
+CHROMA_PATH = "././chroma/llamaindex"
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:

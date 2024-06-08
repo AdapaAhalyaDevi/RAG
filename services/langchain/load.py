@@ -6,7 +6,7 @@ from services.langchain.embedding import get_embedding_function
 from langchain_community.vectorstores import Chroma
 import os
 
-DB_PATH = "././chroma"
+DB_PATH = "././chroma/langchain"
 
 class FileExtensionError(Exception):
     "File Format is Not Supported"
@@ -15,15 +15,13 @@ class FileExtensionError(Exception):
 
 
 def load_database(data_path, filename, project_id):
-    try:
-        documents = load_documents(data_path, filename)
-        chunks = split_documents(documents)
-        return add_to_db(chunks, project_id, data_path, filename)
-    except FileExtensionError:
-        return {"error": "File Format is Not Supported"}
-    except Exception as error:
-        print("Error : ", error)
-        return {"error": "something went wrong"}
+    print("load_database function called in langchain")
+    documents = load_documents(data_path, filename)
+    print("**documents**", documents)
+    chunks = split_documents(documents)
+    print("**chunks**", chunks)
+    return add_to_db(chunks, project_id, data_path, filename)
+
 
 
 def load_documents(data_path, filename):
