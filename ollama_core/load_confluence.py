@@ -9,7 +9,7 @@ def load_confluence(agent, llm_model, query, url, username, api_key, space_key):
             return response
 
         case "llamaindex":
-            index, documents = get_confluence_data_as_vector_llamaindex(url, llm_model, username, api_key, space_key)
+            index, documents = get_confluence_data_as_vector_llamaindex(url, llm_model, query, username, api_key, space_key)
             response = query_on_confluence_data_llamaindex(llm_model, index, documents, query)
             return response
 

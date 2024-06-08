@@ -8,7 +8,7 @@ from llama_index.llms.ollama import Ollama
 
 
 
-def get_confluence_data_as_vector_llamaindex(url, llm_model, username, password, space_key):
+def get_confluence_data_as_vector_llamaindex(url, llm_model, query, username, password, space_key):
     docs = []
 
     Settings.llm = Ollama(model=llm_model, request_timeout=1500.0)
@@ -18,13 +18,18 @@ def get_confluence_data_as_vector_llamaindex(url, llm_model, username, password,
     base_url = url
     space_key = space_key
 
+    cql = f'space = "{space_key}" AND title = "{query}"'
+
     reader = ConfluenceReader(base_url=base_url)
     documents = reader.load_data(
         space_key=space_key, include_attachments=True, page_status="current"
     )
+    # documents = reader.load_data(
+    #     cql=cql, include_attachments=True, max_num_results=5
+    # )
     for doc in documents:
-        # new_doc = Document(text=doc.text, metadata=doc.metadata)
         docs.append(doc.text)
+        
     print(documents)
 
     index = VectorStoreIndex.from_documents(
@@ -40,7 +45,7 @@ Provide your response like, Matching: [only percentage]
 
 def query_on_confluence_data_llamaindex(llm_model, index, documents, query_text):
 
-    query_engine = index.as_query_engine()
+    query_engine = index.as_query_engine(llm=llm_model)
     answer = query_engine.query(query_text)
 
     

@@ -62,8 +62,9 @@ def get_confluence_data_as_vector_langchain(url, query, username, api_key, space
         url=url,
         username=username,
         api_key=api_key,
-        # cql=f'space = "{space_key}" AND title = "{query}"',
-        cql=f'space = "{space_key}"',
+        cql=f'space = "{space_key}" AND title = "{query}"',
+        include_attachments=True,
+        # cql=f'space = "{space_key}"',
         space_key=space_key,
         # limit=5,
         # max_pages=4
@@ -102,7 +103,7 @@ def get_confluence_data_as_vector_langchain(url, query, username, api_key, space
 
 
 def query_on_confluence_data_langchain(llm_model, index, query_text):
-    results = index.similarity_search_with_score(query_text, k=1)
+    results = index.similarity_search_with_score(query_text, k=5)
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
