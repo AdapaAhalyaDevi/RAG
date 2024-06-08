@@ -10,7 +10,7 @@ from services.langchain.embedding import get_embedding_function
 import os
 
 
-LLM_MODEL_NAME = "llama2"
+
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
@@ -23,7 +23,10 @@ Answer the question based on the above context: {question}
 """
 
 
-def filetoquery(data_path, filename, query):
+def filetoquery(llm_model, data_path, filename, query):
+
+    LLM_MODEL_NAME = llm_model
+
     _, file_extension = os.path.splitext(filename)
     match file_extension:
         case '.txt':

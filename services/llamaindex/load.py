@@ -10,7 +10,7 @@ DB_PATH = "././chroma"
 
 def load_database(data_path, filename, project_id):
     documents = load_documents(data_path)
-    add_to_db(documents, data_path, project_id, filename)
+    return add_to_db(documents, data_path, project_id, filename)
 
 
 def load_documents(data_path):
@@ -29,6 +29,8 @@ def add_to_db(documents, data_path, project_id, filename):
     index = VectorStoreIndex.from_documents(
         documents, storage_context=storage_context, embed_model=get_embedding_function()
     )
+
+    return {"response": "File Upload Successfully"}
 
 
 

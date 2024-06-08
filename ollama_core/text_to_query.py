@@ -1,27 +1,15 @@
-from langchain.prompts import ChatPromptTemplate
-from langchain_community.llms.ollama import Ollama
+from services.langchain.text_to_query import text_to_query as langchain_query
+from services.llamaindex.text_to_query import text_to_query as llamaindex_query
 
 
+def query_from_text(agent, llm_model, text, query):
+    try:
+        match agent:
+            case "langchain":
+                return langchain_query(llm_model, text, query)
 
-LLM_MODEL_NAME = "llama2"
+            case _:
+                return {"response" : "agent not found"}
 
-PROMPT_TEMPLATE = """
-Answer the question based only on the following context:
-
-{context}
-
----
-
-Answer the question based on the above context: {question}
-"""
-
-def text_to_query(text: str, query: str):
-
-    prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    prompt = prompt_template.format(context=text, question=query)
-
-    model = Ollama(model=LLM_MODEL_NAME)
-    
-    response_text = model.invoke(prompt)
-
-    return {"response": response_text}
+    except Exception as error:
+        return {"error": error}

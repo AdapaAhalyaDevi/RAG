@@ -4,21 +4,12 @@ from langchain_community.document_loaders import ConfluenceLoader
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
-from dotenv import load_dotenv
-import os
 from langchain.schema.document import Document
 from services.langchain.embedding import get_embedding_function
 from langchain.vectorstores.chroma import Chroma
-
+from services.langchain.text_to_query import text_to_query
 from langchain.text_splitter import MarkdownHeaderTextSplitter
 
-load_dotenv()
-
-# CONFLUENCE_API_TOKEN = os.getenv("CONFLUENCE_API_TOKEN")
-# CONFLUENCE_CLIENT_ID = os.getenv("CONFLUENCE_CLIENT_ID")
-# CONFLUENCE_BASE_URL = os.getenv("CONFLUENCE_BASE_URL")
-# CONFLUENCE_USERNAME = os.getenv("CONFLUENCE_USERNAME")
-# CONFLUENCE_SPACE_KEY = os.getenv("CONFLUENCE_SPACE_KEY")
 
 LLM_MODEL_NAME = "llama2"
 
@@ -67,11 +58,12 @@ def compute_ids(chunks):
 
 
 def get_confluence_data_as_vector_langchain(url, username, api_key, space_key):
+    print(f"space = {space_key}")
     loader = ConfluenceLoader(
         url=url,
         username=username,
         api_key=api_key,
-        cql="space = " + space_key,
+        cql=f'space = "{space_key}"',
         space_key=space_key,
         limit=5,
         max_pages=4
@@ -96,6 +88,7 @@ def get_confluence_data_as_vector_langchain(url, username, api_key, space_key):
                 }
 
         md_header_splits = markdown_splitter.split_text(content)
+
         for i, split in enumerate(md_header_splits):
             data['sub_id'] = i
             data.update(split.metadata)
@@ -103,22 +96,31 @@ def get_confluence_data_as_vector_langchain(url, username, api_key, space_key):
             data['content'] = f"{data['title']}\n\tsubsection:{data['Header 1']}:\n\tsub_subsection:{data['Header 2']}:\n" + split.page_content
             new_doc = Document(page_content=data['content'], metadata=document.metadata)
             docs.append(new_doc)
+    print(docs)
 
     return Chroma.from_documents(docs, get_embedding_function())
 
 
-def query_on_confluence_data_langchain(index, query_text):
+def query_on_confluence_data_langchain(llm_model, index, query_text):
     results = index.similarity_search_with_score(query_text, k=1)
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, query=query_text)
 
-    model = Ollama(model=LLM_MODEL_NAME)
+    model = Ollama(model=llm_model)
 
     response_text = model.invoke(prompt)
 
     sources = [doc.metadata.get("source", None) for doc, _score in results]
     formatted_response = f"Response: {response_text}\nSources: {sources}"
 
-    return {"response": response_text}
+
+    PROMPT_TEMPLATE2 = """ 
+    From given above context can you tell me how much percentage the response is matching with the query. Here is my Query and Response, \n
+    Query: {query}\nResponse: {response}\n
+    Provide your response like, Matching: [only percentage]
+    """
+    prompt2 = PROMPT_TEMPLATE2.format(query=query_text, response=response_text)
+    matchingIndex = text_to_query(llm_model, context_text, prompt2)
+    return {"response": response_text, "hallucinatingPercentage": matchingIndex}

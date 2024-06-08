@@ -6,7 +6,6 @@ import os
 from services.langchain.embedding import get_embedding_function
 
 CHROMA_PATH = "././chroma"
-LLM_MODEL_NAME = "llama2"
 
 
 PROMPT_TEMPLATE = """
@@ -20,7 +19,7 @@ Answer the question based on the above context: {question}
 """
 
 
-def run_query(query_text: str, project_id):
+def run_query(llm_model: str, query_text: str, project_id: str):
     path = f"{CHROMA_PATH}/{project_id}"
     if not os.path.exists(path):
         print("Database not found")
@@ -35,7 +34,7 @@ def run_query(query_text: str, project_id):
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
 
-    model = Ollama(model=LLM_MODEL_NAME)
+    model = Ollama(model=llm_model)
     
     response_text = model.invoke(prompt)
 

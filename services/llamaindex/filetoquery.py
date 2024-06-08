@@ -3,10 +3,12 @@ from llama_index.llms.ollama import Ollama
 from llama_index.embeddings.ollama import OllamaEmbedding
 import json 
 
-Settings.llm = Ollama(model="llama2", request_timeout=1500.0)
 Settings.embed_model = OllamaEmbedding(model_name="nomic-embed-text")
 
-def filetoquery(filename, query):
+def filetoquery(llm_model, filename, query):
+
+    Settings.llm = Ollama(model=llm_model, request_timeout=1500.0)
+
     documents = SimpleDirectoryReader(input_files=[f"././data/{filename}"]).load_data()
     index = VectorStoreIndex.from_documents(
         documents,
