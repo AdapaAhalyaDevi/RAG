@@ -52,6 +52,7 @@ def query_on_confluence_data_llamaindex(llm_model, index, documents, query_text)
         case "llama2":
             LLM_MODEL_NAME = "mistral"
     matchingIndex = text_to_query(LLM_MODEL_NAME, documents, prompt)
-    return {"response": answer.response, "hallucinatingPercentage": matchingIndex.response}
+
+    return {"response": answer.response, "hallucinatingPercentage": matchingIndex}
 
 
