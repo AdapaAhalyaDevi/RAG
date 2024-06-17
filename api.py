@@ -8,6 +8,8 @@ from ollama_core.retriever import run_query
 from ollama_core.filetoquery import file_to_query
 from ollama_core.load_confluence import load_confluence
 from ollama_core.text_to_query import query_from_text
+from services.llamaindex.confluence_to_vector import conf_to_vector
+from services.langchain.text_to_m2m import text_to_m2mquery
 
 app = FastAPI()
 DATA_PATH = "././data"
@@ -69,6 +71,10 @@ async def confluence_load(param: QueryConfluence):
     return response
 
 
+@app.get("/confluence-vector")
+async def confluence_to_vector():
+    return conf_to_vector()
+
 
 class TextToQuery(BaseModel):
     agent: str
@@ -80,3 +86,14 @@ class TextToQuery(BaseModel):
 async def query(param: TextToQuery):
     response = query_from_text(param.agent, param.llm_model, param.text_content, param.query)
     return response
+
+
+
+
+class TextToM2M(BaseModel):
+    text: str
+    llm_model: str
+
+@app.post("/text-to-m2m")
+async def m2m(param: TextToM2M):
+    return text_to_m2mquery(param.text, param.llm_model)
