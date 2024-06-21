@@ -8,7 +8,7 @@ from ollama_core.retriever import run_query
 from ollama_core.filetoquery import file_to_query
 from ollama_core.load_confluence import load_confluence
 from ollama_core.text_to_query import query_from_text
-from services.llamaindex.confluence_to_vector import conf_to_vector
+# from services.llamaindex.confluence_to_vector import conf_to_vector
 from services.langchain.text_to_m2m import text_to_m2mquery
 
 app = FastAPI()
@@ -71,9 +71,9 @@ async def confluence_load(param: QueryConfluence):
     return response
 
 
-@app.get("/confluence-vector")
-async def confluence_to_vector():
-    return conf_to_vector()
+# @app.get("/confluence-vector")
+# async def confluence_to_vector():
+#     return conf_to_vector()
 
 
 class TextToQuery(BaseModel):
